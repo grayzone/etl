@@ -1,4 +1,4 @@
-﻿--drop table customer;
+--drop table customer;
 --drop table device;
 --drop table location;
 --drop table locationrole;
@@ -151,7 +151,6 @@ WHERE
 CREATE VIEW deviceloc AS
 SELECT 
   location.locationid, 
-  location.countrycode, 
   location.city, 
   device.serialnumber, 
   location.countrycode, 
@@ -177,21 +176,6 @@ GROUP BY
 	location.city
 ORDER BY
 	city;
-
-CREATE VIEW deviceincountry AS
-SELECT 
-	location.countrycode,
-	count(device.serialnumber) AS total 
-FROM 
-	public.device, 
-  	public.location 
-WHERE 
-	location.locationid = device.locationid
-GROUP BY 
-	location.countrycode
-ORDER BY
-	countrycode;
-
 	
 CREATE VIEW  devicenuminprovince AS 
 SELECT 

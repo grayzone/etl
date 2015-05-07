@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"log"
-	"time"
 	"strings"
-
+	"time"
 )
 
 type DBOps struct {
@@ -23,6 +22,21 @@ func (ops *DBOps) Init() {
 	ops.Dbname = "etl"
 	ops.User = "postgres"
 	ops.Password = "123456"
+}
+
+type CityLevel struct {
+	City  string
+	Total int
+}
+
+type ProvinceLevel struct {
+	Province string
+	Total    int
+}
+
+type CountryLevel struct {
+	Country string
+	Total   int
 }
 
 func (ops *DBOps) Open() (err error) {
@@ -57,7 +71,7 @@ func (ops *DBOps) AddOneCunstomer(line []string) error {
 		return err
 	}
 
-	_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), time.Now())
+	_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), time.Now())
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -99,7 +113,7 @@ func (ops *DBOps) AddCunstomers(lines [][]string) error {
 	}
 
 	for _, line := range lines {
-		_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), time.Now())
+		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), time.Now())
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -141,7 +155,7 @@ func (ops *DBOps) AddOneDevice(line []string) error {
 		return err
 	}
 
-	_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), strings.Trim(line[8],"\""), strings.Trim(line[9],"\""), strings.Trim(line[10],"\""), strings.Trim(line[11],"\""), time.Now())
+	_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), time.Now())
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -182,7 +196,7 @@ func (ops *DBOps) AddDevices(lines [][]string) error {
 	}
 
 	for _, line := range lines {
-		_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), strings.Trim(line[8],"\""), strings.Trim(line[9],"\""), strings.Trim(line[10],"\""), strings.Trim(line[11],"\""), time.Now())
+		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), time.Now())
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -223,7 +237,7 @@ func (ops *DBOps) AddOneLocation(line []string) error {
 		return err
 	}
 
-	_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), strings.Trim(line[8],"\""), strings.Trim(line[9],"\""), strings.Trim(line[10],"\""), strings.Trim(line[11],"\""), strings.Trim(line[12],"\""), time.Now())
+	_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), strings.Trim(line[12], "\""), time.Now())
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -264,7 +278,7 @@ func (ops *DBOps) AddLocations(lines [][]string) error {
 	}
 
 	for _, line := range lines {
-		_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), strings.Trim(line[8],"\""), strings.Trim(line[9],"\""), strings.Trim(line[10],"\""), strings.Trim(line[11],"\""), strings.Trim(line[12],"\""), time.Now())
+		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), strings.Trim(line[12], "\""), time.Now())
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -305,7 +319,7 @@ func (ops *DBOps) AddOneLocationRole(line []string) error {
 		return err
 	}
 
-	_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), time.Now())
+	_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), time.Now())
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -346,7 +360,7 @@ func (ops *DBOps) AddLocationRoles(lines [][]string) error {
 	}
 
 	for _, line := range lines {
-		_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""),  time.Now())
+		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), time.Now())
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -387,7 +401,7 @@ func (ops *DBOps) AddOneLog(line []string) error {
 		return err
 	}
 
-	_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), strings.Trim(line[8],"\""), strings.Trim(line[9],"\""), strings.Trim(line[10],"\""), strings.Trim(line[11],"\""), strings.Trim(line[12],"\""), time.Now())
+	_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), strings.Trim(line[12], "\""), time.Now())
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -429,7 +443,7 @@ func (ops *DBOps) AddLogs(lines [][]string) error {
 
 	for _, line := range lines {
 		//		line = split
-		_, err = stmt.Exec(strings.Trim(line[0],"\"") , strings.Trim(line[1],"\""), strings.Trim(line[2],"\""), strings.Trim(line[3],"\""), strings.Trim(line[4],"\""), strings.Trim(line[5],"\""), strings.Trim(line[6],"\""), strings.Trim(line[7],"\""), strings.Trim(line[8],"\""), strings.Trim(line[9],"\""), strings.Trim(line[10],"\""), strings.Trim(line[11],"\""), strings.Trim(line[12],"\""), time.Now())
+		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Trim(line[5], "\""), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), strings.Trim(line[12], "\""), time.Now())
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -455,4 +469,31 @@ func (ops *DBOps) AddLogs(lines [][]string) error {
 		return err
 	}
 	return nil
+}
+
+func (ops *DBOps) GetDeviceInCountry() ([]CountryLevel, error) {
+
+	rows, err := ops.Db.Query("select countrycode,total from deviceincountry")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var result []CountryLevel
+
+	for rows.Next() {
+		var record CountryLevel
+
+		err := rows.Scan(&record.Country, &record.Total)
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		result = append(result, record)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result, nil
 }

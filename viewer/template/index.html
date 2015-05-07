@@ -1,16 +1,19 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<title>Web Client</title>
+<title>ETL Viewer</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <meta http-equiv="content-type"
 	content="application/json; charset=utf-8" />
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="template/js/control.js"></script>  
-
-
 <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+
+<script src="template/js/control.js"></script>  
+<script src="template/js/func.js"></script>
+
+
 
 </head>
 
@@ -20,11 +23,22 @@
 <body>
 
 <div>
-<button id="btnworld">World</button>
+<button id="btnworld">Go</button>
+
+Continent: <select name="continent" id="continent">
+<option value="world">World</option>
+<option value="002">Africa</option>
+<option value="150">Europe</option>
+<option value="019">Americas</option>
+<option value="142">Asia</option>
+<option value="009">Oceania</option>
+</select>
+			
 
 </div>
 
-<div id="chart" style="width: 1024px; height: 768px;"></div>
+<div id="chart_geo" style="width: 1024px; height: 768px;"></div>
+<div id="chart_pie" style="width: 512px; height: 384px;"></div>
 
 
 </body>

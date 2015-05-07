@@ -1,388 +1,183 @@
-function GetNotificationByOID(oid) {
+function get_gchart_data(data) {
+    var g_data = new google.visualization.DataTable();
+    g_data.addColumn('string', 'Country');
+    g_data.addColumn('number', 'Popularity');
+    g_data.addRows(data);
+    return g_data;
+  }	
 
-	var result = null;
 
-	$.ajax({
-		type : "POST",
-		async : false,
-		url : "/getnotificationbyoid",
-		data : {
-			"oid" : oid,
-			"agentip" : $('#tagentip').val()
-		},
-		success : function(r) {
-			if (r.length > 0) {
-				UpdateMessageinWeb(JSON.parse(r));
-				result = r;
-			}
-		}
-	});
-	return result;
+// Callback that creates and populates a data table, 
+// instantiates the pie chart, passes in the data and
+// draws it.
+function drawChart() {
+
+// Create the data table.
+var data = new google.visualization.DataTable();
+data.addColumn('string', 'Topping');
+data.addColumn('number', 'Slices');
+data.addRows([
+  ['Mushrooms', 3],
+  ['Onions', 1],
+  ['Olives', 1],
+  ['Zucchini', 1],
+  ['Pepperoni', 2]
+]);
+
+// Set chart options
+var options = {'title':'How Much Pizza I Ate Last Night',
+               'width':400,
+               'height':300};
+
+// Instantiate and draw our chart, passing in some options.
+var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+chart.draw(data, options);
 }
 
-function UpdateGetAgentStatus(uniqueIndex) {
-	var result = GetAgentStatus();
-
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'AgentStatus', uniqueIndex - 1, result.AgentStatus);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'CacheTimeOut', uniqueIndex - 1, result.CacheTimeOut);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'DataReady', uniqueIndex - 1, result.DataReady);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'Datetime', uniqueIndex - 1, result.Datetime);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'JobStatus', uniqueIndex - 1, result.JobStatus);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'LastUpdate', uniqueIndex - 1, result.LastUpdate);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'ServerAvailable', uniqueIndex - 1, result.ServerAvailable);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'ServerStatus', uniqueIndex - 1, result.ServerStatus);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'Timestamp', uniqueIndex - 1, result.Timestamp);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'UploadTime', uniqueIndex - 1, result.UploadTime);
-	$('#tbagentstatus').appendGrid('setCtrlValue', 'DownloadTime', uniqueIndex - 1, result.DownloadTime);
-}
-
-function UpgradeSoftware(data) {
-	$.ajax({
-		type : "POST",
-		url : "/upgradesoftware",
-		data : {
-			"oid" : data.Oid,
-			"pertinent_type" : data.PertinentType,
-			"pertinent_identifier" : data.PertinentIdentifier,
-			"part_number" : data.PartNumber,
-			"revision" : data.Revision,
-			"softwarename" : data.Name,
-			"agentip" : $('#tagentip').val()
-
-		},
-		success : function(result) {
-			if (result.length > 0) {
-				UpdateMessageinWeb(JSON.parse(result));
-			}
-		}
-	});
-}
-
-function SendInstallStatus(data, status) {
-	$.ajax({
-		type : "POST",
-		url : "/sendinstallstatus",
-		data : {
-			"oid" : data.Oid,
-			"pertinent_type" : data.PertinentType,
-			"pertinent_identifier" : data.PertinentIdentifier,
-			"part_number" : data.PartNumber,
-			"revision" : data.Revision,
-			"softwarename" : data.Name,
-			"agentip" : $('#tagentip').val(),
-			"installstatus" : status
-
-		},
-		success : function(result) {
-			if (result.length > 0) {
-				UpdateMessageinWeb(JSON.parse(result));
-			}
-		}
-	});
-}
-
-function ViewDocument(data) {
-
-	$.ajax({
-		type : "POST",
-		url : "/viewdocument",
-		data : {
-			"oid" : data.Oid,
-			"pertinent_type" : data.PertinentType,
-			"file_size" : data.Filesize * 1024000,
-			"md5" : data.MD5,
-			"location" : data.Location,
-			"agentip" : $('#tagentip').val()
-		},
-		success : function(result) {
-			if (result.length > 0) {
-				UpdateMessageinWeb(JSON.parse(result));
-			}
-		}
-	});
-
-}
-
-function UpdateMessageinWeb(result) {
-	$('#tarequest').html(result.Request);
-	$('#taresponse').html(result.Response);
-	$('#tastatus').html(result.Status);
-
-}
-
-function ChangeFeatureStatus(feature) {
-	$.ajax({
-		type : "POST",
-		url : "/changefeaturestatus",
-		data : {
-			"serialnumber" : $('#serialnumber').val(),
-			"devicetype" : $('#devicetype').val(),
-			"id" : feature.ID,
-			"name" : feature.Name,
-			"duration" : feature.Duration,
-			"startdate" : new Date(feature.StartDate).getTime() / 1000,
-			"term" : feature.Term - 1,
-			"licensekey" : feature.LicenseKey,
-			"licenseserialnumber" : feature.LicenseSerialNumber,
-			"agentip" : $('#tagentip').val(),
-			"status" : feature.Status
-
-		},
-		success : function(result) {
-			if (result.length > 0) {
-				UpdateMessageinWeb(JSON.parse(result));
-			}
-		}
-	});
-}
-
-function UploadLog(log) {
-	$.ajax({
-		type : "POST",
-		url : "/uploadlog",
-		data : {
-			"serialnumber" : $('#serialnumber').val(),
-			"devicetype" : $('#devicetype').val(),
-			"agentip" : $('#tagentip').val(),
-			"type" : log.Type,
-			"location" : log.Location
-
-		},
-		success : function(result) {
-			if (result.length > 0) {
-				UpdateMessageinWeb(JSON.parse(result));
-			}
-		}
-	});
-
-}
-
-function UpdateFeatures(result) {
-	var initData_available = new Array();
-	var initData_entitled = new Array();
-	var initData_enabled = new Array();
-	if (result.ResMsg.Response.Notifications != null) {
-		if (result.ResMsg.Response.Notifications.Notification[0].Body.Features != null) {
-			var features = result.ResMsg.Response.Notifications.Notification[0].Body.Features.Feature;
-			for (var i = 0; i < features.length; i++) {
-
-				var feature = {
-					"Type" : features[i].Type,
-					"ID" : features[i].ID,
-					"Name" : features[i].Name,
-					"Description" : features[i].Description,
-					"Duration" : features[i].Duration,
-					"Term" : parseInt(features[i].Term) + 1,
-					"agentip" : $('#tagentip').val(),
-					"Status" : features[i].Status,
-					"UpgradeRequired" : features[i].SoftwareUpgradeRequired
-				};
-				if (features[i].StartDate != "") {
-					var t = new Date();
-					t.setTime(features[i].StartDate * 1000);
-					feature.StartDate = $.formatDateTime('mm/dd/yy', t);
-				}
-				if (features[i].Type == "entitledfeature") {
-					initData_entitled.push(feature);
-
-				} else if (features[i].Type == "enabledfeature" || features[i].Type == "demofeature") {
-					initData_enabled.push(feature);
-
-				} else if (features[i].Type == "availablefeature") {
-					initData_available.push(feature);
-
-				} else {
-				}
-
-			}
-
-		}
-	}
-	$('#tbfeature_available').appendGrid('load', initData_available);
-	$('#tbfeature_entitled').appendGrid('load', initData_entitled);
-	$('#tbfeature_enabled').appendGrid('load', initData_enabled);
-}
-
-function UpdateHwSwComponent(result) {
-
-	if (result.ResMsg.Response.Notifications != null) {
-		var initData_hw = new Array();
-		var initData_sw = new Array();
-		components = result.ResMsg.Response.Notifications.Notification[0].Body.Components.Component;
-		for (var i = 0; i < components.length; i++) {
-			var component = {
-				'ComponentType' : components[i].ComponentType,
-				'Name' : components[i].Name,
-				'PartNumber' : components[i].PartNumber,
-				'Revision' : components[i].Revision
-			};
-			if (components[i].ComponentType == "hardware") {
-
-				initData_hw.push(component);
-			} else if (components[i].ComponentType == "software") {
-				initData_sw.push(component);
-
-			}
-
-		}
-		$('#tbhardware').appendGrid('load', initData_hw);
-		$('#tbsoftware').appendGrid('load', initData_sw);
-
-	}
-
-}
-
-function CheckNotificationObjectType(s) {
-	var software = "24637560-edb3-4961-b17d-14e74f74457c";
-	var releasenotes = "02d7aa7b-25e0-423f-8f98-c15612e6a7c0";
-	var servicemanual = "c250c8db-b532-4d18-8956-420c3d637a41";
-	var userguide = "f520b9ce-c641-5e29-9167-531d4e748b52";
-	var other = "5789f84e-7f582-6e30-8289-692C57e59d63";
-
-	if (s.search(software) > 0) {
-		return "SOFTWARE";
-	} else if (s.search(releasenotes) > 0) {
-		return "RELEASE NOTES";
-	} else if (s.search(servicemanual) > 0) {
-		return "SERVICE MANUAL";
-	} else if (s.search(userguide) > 0) {
-		return "USER GUIDE";
-	} else if (s.search(other) > 0) {
-		return "OTHER";
-	} else {
-		return "";
-	}
-	return "";
-}
-
-function ProcHeaders(result) {
-
-	var notes = result.ResMsg.Response.Notes.Note;
-
-	var initdatasw = new Array();
-	var initdatadoc = new Array();
-
-	if (notes != null) {
-		for (var i = 0; i < notes.length; i++) {
-			var note = notes[i];
-			var type = CheckNotificationObjectType(note.Header.PertinentType);
-
-			var v = {
-				"Oid" : note.Oid,
-				
-				"agentip" : $('#tagentip').val()
-			}
-
-			if (type == "SOFTWARE") {
-				if (note.Components != null){
-					v["Name"] = note.Components.Component[0].Name;
-					v["Language"] = note.Components.Component[0].Language;
-					v["Revision"] = note.Components.Component[0].Revision;
-					v["PartNumber"] = note.Components.Component[0].PartNumber;
-					v["Revision"] = note.Components.Component[0].Revision;
-					
-					if (note.Components.Component[0].Features != null){
-						var featurenames = new Array();
-						var feature = note.Components.Component[0].Features.Feature;
-						for (var j = 0 ; j < feature.length; j++){
-							featurenames.push(feature[j].Name);							
-						}
-						v["Features"] = featurenames.join(';');						
-					}					
-				}	
-				initdatasw.push(v);
-			} else {
-				if (note.Components != null){
-					v["Name"] = note.Components.Component[0].Name;
-				}				
-				initdatadoc.push(v);
-
-			}
-
-		}
-	}
-
-	$('#tbnotificationsw').appendGrid('load', initdatasw)
-	$('#tbnotificationdoc').appendGrid('load', initdatadoc)
-
-}
-
-function ProcRules(result){
-	var notes = result.ResMsg.Response.Notes.Note;
-
-	var initdatarule = new Array();
-
-	if (notes != null) {
-		for (var i = 0; i < notes.length; i++) {
-			var note = notes[i];
-			var type = CheckNotificationObjectType(note.Header.PertinentType);
-
-			var v = {
-				"Oid" : note.Oid,
-				"agentip" : $('#tagentip').val()
-			}
-			
-			initdatarule.push(v);
 
 
-		}
-	}
-
-	$('#tbnotificationrule').appendGrid('load', initdatarule)
-
-}
-
-function GetAgentStatus() {
-	var initData = [ {
-		AgentStatus : "",
-		CacheTimeOut : "",
-		DataReady : "",
-		Datetime : "",
-		JobStatus : "",
-		LastUpdate : "",
-		ServerAvailable : "",
-		ServerStatus : "",
-		Timestamp : "",
-		UploadTime : "",
-		DownloadTime : "",
-
-	} ];
-	$.ajax({
-		type : "POST",
-		url : "/getstatus",
-		data : {
-			"agentip" : $('#tagentip').val()
-		},
-		async : false,
-		success : function(result) {
-
-			if (result.length > 0) {
-				var s = JSON.parse(result);
-				var param = s.ResMsg.Response.Params;
-
-				initData.AgentStatus = param.AgentStatus;
-				initData.CacheTimeOut = param.CacheTimeOut;
-				initData.DataReady = param.DataReady;
-				initData.Datetime = param.Datetime;
-				initData.JobStatus = param.JobStatus;
-				initData.LastUpdate = param.LastUpdate;
-				initData.ServerAvailable = param.ServerAvailable;
-				initData.ServerStatus = param.ServerStatus;
-				initData.Timestamp = param.Timestamp;
-				initData.UploadTime = param.UploadTime;
-				initData.DownloadTime = param.DownloadTime;
-
-				UpdateMessageinWeb(JSON.parse(result));
-			}
-
-		}
-
-	});
-
-	return initData;
-}
-
-function GetSelfRegURL(result){
-	return result.ResMsg.Response.Params.URL;
+function drawRegionsMap() {
 	
-}
+	var data =  [['AE',214],
+	             ['AG',2],
+	             ['AL',8],
+	             ['AN',4],
+	             ['AR',5304],
+	             ['AT',107],
+	             ['AU',44204],
+	             ['AW',6],
+	             ['BA',8],
+	             ['BD',46],
+	             ['BE',367491],
+	             ['BG',38],
+	             ['BH',11],
+	             ['BM',154],
+	             ['BN',3],
+	             ['BO',160],
+	             ['BR',52474],
+	             ['BS',227],
+	             ['BZ',1],
+	             ['CA',862],
+	             ['CH',3556],
+	             ['CL',6392],
+	             ['CN',7514],
+	             ['CO',7543],
+	             ['CR',890],
+	             ['CS',3],
+	             ['CY',4],
+	             ['CZ',41],
+	             ['DE',63608],
+	             ['DK',13183],
+	             ['DM',7],
+	             ['DO',32],
+	             ['DZ',20],
+	             ['EC',604],
+	             ['EE',8],
+	             ['EG',85],
+	             ['ES',4001],
+	             ['FI',22702],
+	             ['FR',31986],
+	             ['GB',2530],
+	             ['GR',524],
+	             ['GT',361],
+	             ['GU',59],
+	             ['HK',10762],
+	             ['HN',32],
+	             ['HR',30],
+	             ['HT',3],
+	             ['HU',220],
+	             ['ID',59],
+	             ['IE',29701],
+	             ['IL',8903],
+	             ['IN',41278],
+	             ['IR',118],
+	             ['IS',19],
+	             ['IT',4651],
+	             ['JM',288],
+	             ['JO',49],
+	             ['JP',253295],
+	             ['KH',206],
+	             ['KP',442],
+	             ['KR',111132],
+	             ['KW',261],
+	             ['KY',2],
+	             ['KZ',4],
+	             ['LC',1],
+	             ['LI',4],
+	             ['LK',93],
+	             ['LT',8],
+	             ['LU',2],
+	             ['LV',6],
+	             ['MA',8],
+	             ['MP',2],
+	             ['MT',10],
+	             ['MX',10003],
+	             ['MY',553],
+	             ['NC',31],
+	             ['NG',5],
+	             ['NI',164],
+	             ['NL',7847],
+	             ['NO',213],
+	             ['NP',25],
+	             ['NZ',482],
+	             ['OM',13],
+	             ['PA',23789],
+	             ['PE',2064],
+	             ['PF',147],
+	             ['PH',1049],
+	             ['PK',126],
+	             ['PL',922],
+	             ['PR',16365],
+	             ['PT',621],
+	             ['PY',145],
+	             ['QA',18],
+	             ['RO',14],
+	             ['RU',417],
+	             ['SA',1787],
+	             ['SE',749],
+	             ['SG',167757],
+	             ['SI',188],
+	             ['SK',1],
+	             ['SO',2],
+	             ['SV',100],
+	             ['TH',3353],
+	             ['TN',4],
+	             ['TR',880],
+	             ['TT',27],
+	             ['TW',4154],
+	             ['UA',76],
+	             ['US',3747865],
+	             ['UY',13138],
+	             ['VE',221],
+	             ['VG',1],
+	             ['VI',9],
+	             ['VN',23],
+	             ['ZA',3881]];
+
+		
+		var g_data = get_gchart_data(data);
+     
+		var options = {
+				 region: '019'
+				
+		};
+
+     var chart = new google.visualization.GeoChart(document.getElementById('chart_div'));
+
+     chart.draw(g_data, options);
+
+	$.ajax({
+		type : "POST",
+		url : "/world",
+		dataType:"json",
+		async: false ,
+		success : function(result) {
+			
+
+	        
+			
+			d = eval(result)
+	//		alert(d)
+		}
+	});
+	      }
