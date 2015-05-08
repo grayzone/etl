@@ -1,12 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/grayzone/etl/util"
 	"html/template"
 	"log"
 	"net/http"
-	"encoding/json"
+	"strings"
 )
 
 func renderHandler(w http.ResponseWriter, r *http.Request, templatepath string) {
@@ -23,22 +24,34 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewWorldHandler(w http.ResponseWriter, r *http.Request) {
 
-//	result := getDeviceInCountries()
-//	fmt.Fprint(w, result)
+	result := getDeviceInContinent()
 
-result := ""
+	fmt.Fprint(w, result)
+}
 
-fmt.Fprint(w, "ok")
+func viewUSHandler(w http.ResponseWriter, r *http.Request) {
 
+	result := getDeviceInCountry()
+
+	fmt.Fprint(w, result)
+}
+
+func viewProvinceHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	province := r.PostFormValue("province")
+
+	result := GetDeviceInProvince(strings.TrimPrefix(province, "US-"))
+
+	fmt.Fprint(w, result)
 }
 
 func staticHandler(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.URL.Path[1:])
+//	fmt.Println(r.URL.Path[1:])
 
 	http.ServeFile(w, r, r.URL.Path[1:])
 }
 
-func getDeviceInCountries() string{
+func getDeviceInContinent() string {
 
 	var db util.DBOps
 	err := db.Open()
@@ -47,13 +60,56 @@ func getDeviceInCountries() string{
 	}
 	defer db.Close()
 
-	result, err := db.GetDeviceInCountry()
-	if err != nil{
+	result, err := db.GetDeviceInContinent()
+	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(result)
-	log.Println(len(result))
+
+	b, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(b)
+}
+
+func getDeviceInCountry() string {
+	var db util.DBOps
+	err := db.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	result, err := db.GetDeviceInCountry()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(b)
+}
+
+func GetDeviceInProvince(province string) string {
+
+	var db util.DBOps
+	err := db.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	result, err := db.GetDeviceInProvince(province)
+	if err != nil {
+		log.Fatal(err)
+	}
 	
+//	log.Println(result)
+
 	b, err := json.Marshal(result)
 	if err != nil {
 		log.Fatal(err)
@@ -67,6 +123,8 @@ func main() {
 	http.HandleFunc("/", viewHandler)
 
 	http.HandleFunc("/world", viewWorldHandler)
+	http.HandleFunc("/us", viewUSHandler)
+	http.HandleFunc("/province", viewProvinceHandler)
 
 	http.ListenAndServe(":137", nil)
 

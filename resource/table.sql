@@ -115,39 +115,34 @@ WITH (
   OIDS=FALSE
 );
 
+drop table deviceinworld;
+CREATE TABLE deviceinworld AS (select * from deviceincountry);
+ALTER TABLE deviceinworld ADD COLUMN id serial NOT NULL;
+ALTER TABLE deviceinworld ADD PRIMARY KEY (id );
 
-CREATE VIEW deviceinus AS
-
-SELECT 
-  customer.customerid, 
-  location.locationid, 
-  device.serialnumber, 
-  device.maintenanceexpirationdate, 
-  device.sku, 
-  device.sourcesystem, 
-  device.installcountrycode, 
-  location.addressline1, 
-  location.addressmodifier2, 
-  location.addressmodifier3, 
-  location.addressmodifier4, 
-  location.addressmodifier1, 
+drop table deviceinus;
+CREATE table deviceinus AS (SELECT 
   location.city, 
-  location.stateprovince, 
-  location.countrycode, 
-  locationrole.locationrole
+  location.stateprovince,
+  count(device.serialnumber) AS total 
 FROM 
-  public.customer, 
   public.device, 
-  public.location, 
-  public.locationrole
+  public.location
 WHERE 
-  customer.customerid = device.customerid AND
   device.locationid = location.locationid AND
-  locationrole.customerid = customer.customerid AND 
-  locationrole.locationid = location.locationid AND   
   location.countrycode ='US' 
-  
-  
+GROUP BY
+  location.city,
+  location.stateprovince
+ORDER BY 
+  location.stateprovince,
+  location.city
+);
+
+ALTER TABLE deviceinus ADD COLUMN id serial NOT NULL;
+ALTER TABLE deviceinus ADD PRIMARY KEY (id );
+
+ 
 CREATE VIEW deviceloc AS
 SELECT 
   location.locationid, 
@@ -191,4 +186,5 @@ GROUP BY
 	location.stateprovince
 ORDER BY
 	stateprovince;
+  
   

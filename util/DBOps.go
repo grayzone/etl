@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type DBOps struct {
@@ -471,9 +472,9 @@ func (ops *DBOps) AddLogs(lines [][]string) error {
 	return nil
 }
 
-func (ops *DBOps) GetDeviceInCountry() ([]CountryLevel, error) {
+func (ops *DBOps) GetDeviceInContinent() ([]CountryLevel, error) {
 
-	rows, err := ops.Db.Query("select countrycode,total from deviceincountry")
+	rows, err := ops.Db.Query("select countrycode,total from deviceinworld where countrycode != ''")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -484,6 +485,60 @@ func (ops *DBOps) GetDeviceInCountry() ([]CountryLevel, error) {
 		var record CountryLevel
 
 		err := rows.Scan(&record.Country, &record.Total)
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		result = append(result, record)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result, nil
+}
+
+func (ops *DBOps) GetDeviceInCountry() ([]ProvinceLevel, error){
+	rows, err := ops.Db.Query("select stateprovince, sum(total) as total from deviceinus group by stateprovince order by stateprovince")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var result []ProvinceLevel
+
+	for rows.Next() {
+		var record ProvinceLevel
+
+		err := rows.Scan(&record.Province, &record.Total)
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		result = append(result, record)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result, nil
+}
+
+func (ops *DBOps) GetDeviceInProvince(province string) ([]CityLevel, error){
+	sql := fmt.Sprintf("select city, sum(total) as total from deviceinus where stateprovince = '%s' group by city order by city", province)
+//	log.Println(sql)
+	rows, err := ops.Db.Query(sql)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var result []CityLevel
+
+	for rows.Next() {
+		var record CityLevel
+
+		err := rows.Scan(&record.City, &record.Total)
 		if err != nil {
 			log.Fatal(err)
 		}
