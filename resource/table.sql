@@ -2,9 +2,35 @@
 --drop table device;
 --drop table location;
 --drop table locationrole;
+--drop table devicetype;
+--drop table sku;
 
 --drop table log_device_fail_sku;
 
+CREATE TABLE IF NOT EXISTS  devicetype
+(
+  id serial NOT NULL,
+  device text,
+  createtime timestamp with time zone default now(),
+  
+  CONSTRAINT devicetype_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+
+CREATE TABLE IF NOT EXISTS  sku
+(
+  id serial NOT NULL,
+  sku text,
+  devicetype int,
+  createtime timestamp with time zone default now(),
+  
+  CONSTRAINT sku_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
 
 
 CREATE TABLE IF NOT EXISTS  customer
@@ -41,6 +67,7 @@ CREATE TABLE IF NOT EXISTS  device
   actualshipdate text,
   isdeleted text,
   batchnumber text,
+  devicetype int,
   createtime timestamp with time zone,
 
   CONSTRAINT device_pkey PRIMARY KEY (id)
@@ -91,32 +118,23 @@ WITH (
   OIDS=FALSE
 );
 
-CREATE TABLE IF NOT EXISTS  log_device_fail_sku
-(
-  id serial NOT NULL,
-  locationid text,
-  customerid text,
-  maintenanceexpirationdate text,
-  serialnumber text,
-  sku text,
-  sourcesystem text,
-  installcountrycode text,
-  installationdate text,  
-  actualshipdate text,
-  isdeleted text,
-  lastchangedate text,
-  batchnumber text,
-  exception text,
-  createtime timestamp with time zone,
-
-  CONSTRAINT log_device_fail_sku_pkey PRIMARY KEY (id)
-)
-WITH (
-  OIDS=FALSE
-);
 
 drop table deviceinworld;
-CREATE TABLE deviceinworld AS (select * from deviceincountry);
+CREATE TABLE deviceinworld AS (SELECT 
+  location.countrycode,
+  count(device.serialnumber) AS total 
+FROM 
+  public.device, 
+  public.location
+WHERE 
+  device.locationid = location.locationid AND 
+  device.isdeleted = '0'
+GROUP BY
+  location.countrycode
+ORDER BY 
+  location.countrycode
+);
+
 ALTER TABLE deviceinworld ADD COLUMN id serial NOT NULL;
 ALTER TABLE deviceinworld ADD PRIMARY KEY (id );
 
@@ -130,61 +148,57 @@ FROM
   public.location
 WHERE 
   device.locationid = location.locationid AND
-  location.countrycode ='US' 
+  location.countrycode ='US' AND
+  device.isdeleted = '0'
 GROUP BY
   location.city,
   location.stateprovince
 ORDER BY 
-  location.stateprovince,
   location.city
 );
 
 ALTER TABLE deviceinus ADD COLUMN id serial NOT NULL;
-ALTER TABLE deviceinus ADD PRIMARY KEY (id );
+ALTER TABLE deviceinus ADD COLUMN pb980 int default 0;
+ALTER TABLE deviceinus ADD COLUMN scd700 int default 0;
+ALTER TABLE deviceinus ADD COLUMN forcetriad int default 0;
+ALTER TABLE deviceinus ADD COLUMN cooltip int default 0;
+ALTER TABLE deviceinus ADD PRIMARY KEY (id);
 
- 
-CREATE VIEW deviceloc AS
-SELECT 
-  location.locationid, 
-  location.city, 
-  device.serialnumber, 
-  location.countrycode, 
-  location.stateprovince
-FROM 
-  public.device, 
-  public.location
-WHERE 
-  location.locationid = device.locationid AND
-  location.countrycode ='US';
-  
-CREATE VIEW  devicenumincity AS 
-SELECT 
+drop table deviceindmp;
+CREATE table deviceindmp AS (select
+	device.locationid,
+    device.devicetype, 
+	device.maintenanceexpirationdate,
+	device.serialnumber,
+	device.sku,
+	device.actualshipdate,
 	location.city, 
-	count(device.serialnumber) AS total 
-FROM 
-	public.device, 
-  	public.location 
-WHERE 
-	location.locationid = device.locationid AND 
-	location.countrycode ='US' 
-GROUP BY 
-	location.city
-ORDER BY
-	city;
+    location.stateprovince
 	
-CREATE VIEW  devicenuminprovince AS 
-SELECT 
-	location.stateprovince, 
-	count(device.serialnumber) AS total 
-FROM 
-	public.device, 
-  	public.location 
-WHERE 
-	location.locationid = device.locationid AND 
-	location.countrycode ='US' 
-GROUP BY 
-	location.stateprovince
-ORDER BY
-	stateprovince;
+from 
+	device,
+	location
+where device.devicetype >0 AND
+      location.locationid = device.locationid AND
+      location.countrycode ='US' AND
+      device.isdeleted = '0'
+
+);
+ALTER TABLE deviceindmp ADD COLUMN id serial NOT NULL;
+ALTER TABLE deviceindmp ADD PRIMARY KEY (id);
+
+
+
   
-  
+-- executing
+update device set devicetype = 1 where sku in (select sku from sku where devicetype = 1);
+update device set devicetype = 2 where sku in (select sku from sku where devicetype = 2);
+update device set devicetype = 3 where sku in (select sku from sku where devicetype = 3);
+update device set devicetype = 4 where sku in (select sku from sku where devicetype = 4);
+
+update location set city = 'WAITE PARK' where id = 487587;
+update location set city = 'L ANSE' where id in(530550,555711,541702);
+
+
+
+select location.city, count(device.serialnumber) from device,location where device.devicetype = 4 and device.locationid = location.locationid group by city order by city;

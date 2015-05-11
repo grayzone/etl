@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
+	"github.com/grayzone/etl/util"
 	"log"
 	"os"
 	"strings"
-	"util"
 )
 
 type ImportData func([][]string) error
@@ -147,8 +147,21 @@ func loadETLlog() {
 	ReadDataSourceFile(filepath, db.AddLogs)
 }
 
+func UpdateDeviceNumByTypeInUS() {
+	var db util.DBOps
+	err := db.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	result ,_ := db.GetCityListInProvince()
+//	log.Println(result)
+	db.UpdateDeviceNumByDeviceType(result)
+}
+
 func main() {
 
-	loadETLDataSouce()
+// loadETLDataSouce()
 	//loadETLlog()
+	UpdateDeviceNumByTypeInUS()
 }
