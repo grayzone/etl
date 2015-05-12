@@ -39,6 +39,9 @@ $(document).ready(function() {
 			url : "/us",
 			dataType:"json",
 			async: false ,
+			data:{
+				"devicetype":$('#devicetype').val()				
+			},
 			success : function(result) {
 				var data = [];
 				for (i=0;i<result.length;i++){

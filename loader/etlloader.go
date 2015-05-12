@@ -161,7 +161,7 @@ func UpdateDeviceNumByTypeInUS() {
 
 func main() {
 
-// loadETLDataSouce()
+ // loadETLDataSouce()
 	//loadETLlog()
 	UpdateDeviceNumByTypeInUS()
 }

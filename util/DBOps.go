@@ -279,7 +279,7 @@ func (ops *DBOps) AddLocations(lines [][]string) error {
 	}
 
 	for _, line := range lines {
-		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.ToUpper(strings.Trim(line[5], "\"")), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), strings.Trim(line[12], "\""), time.Now())
+		_, err = stmt.Exec(strings.Trim(line[0], "\""), strings.Trim(line[1], "\""), strings.Trim(line[2], "\""), strings.Trim(line[3], "\""), strings.Trim(line[4], "\""), strings.Replace(strings.ToUpper(strings.Trim(line[5], "\"")), "'", " ", -1), strings.Trim(line[6], "\""), strings.Trim(line[7], "\""), strings.Trim(line[8], "\""), strings.Trim(line[9], "\""), strings.Trim(line[10], "\""), strings.Trim(line[11], "\""), strings.Trim(line[12], "\""), time.Now())
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -499,8 +499,21 @@ func (ops *DBOps) GetDeviceInContinent() ([]CountryLevel, error) {
 	return result, nil
 }
 
-func (ops *DBOps) GetDeviceInCountry() ([]ProvinceLevel, error) {
-	rows, err := ops.Db.Query("select stateprovince, sum(total) as total from deviceinus group by stateprovince order by stateprovince")
+func (ops *DBOps) GetDeviceInCountry(devicetype string) ([]ProvinceLevel, error) {
+	var s string
+	switch devicetype {
+		case "0":
+		s = fmt.Sprintf("select stateprovince, sum(total) as total from deviceinus group by stateprovince order by stateprovince")
+		case "1":
+		s = fmt.Sprintf("select stateprovince, sum(pb980) as total from deviceinus group by stateprovince order by stateprovince")
+		case "2":
+		s = fmt.Sprintf("select stateprovince, sum(scd700) as total from deviceinus group by stateprovince order by stateprovince")
+		case "3":
+		s = fmt.Sprintf("select stateprovince, sum(forcetriad) as total from deviceinus group by stateprovince order by stateprovince")
+		case "4":
+		s = fmt.Sprintf("select stateprovince, sum(cooltip) as total from deviceinus group by stateprovince order by stateprovince")
+	}
+	rows, err := ops.Db.Query(s)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -526,9 +539,9 @@ func (ops *DBOps) GetDeviceInCountry() ([]ProvinceLevel, error) {
 }
 
 func (ops *DBOps) GetDeviceInProvince(province string) ([]CityLevel, error) {
-	sql := fmt.Sprintf("select city, sum(total) as total from deviceinus where stateprovince = '%s' group by city order by city", province)
+	s := fmt.Sprintf("select city, sum(total) as total from deviceinus where stateprovince = '%s' group by city order by city", province)
 	//	log.Println(sql)
-	rows, err := ops.Db.Query(sql)
+	rows, err := ops.Db.Query(s)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -582,30 +595,25 @@ func (ops *DBOps) GetCityListInProvince() ([][]string, error) {
 	return result, nil
 }
 
-func (ops *DBOps) UpdateDeviceNumByDeviceType(city [][]string) error {
-
+func (ops *DBOps) UpdateDeviceNumByDeviceType(city [][]string) {
 	for _, v := range city {
 		d1 := ops.GetDeviceNumInCity(v[0], v[1], 1)
 		d2 := ops.GetDeviceNumInCity(v[0], v[1], 2)
 		d3 := ops.GetDeviceNumInCity(v[0], v[1], 3)
 		d4 := ops.GetDeviceNumInCity(v[0], v[1], 4)
 
-		log.Printf("%v : %d, %d, %d, %d\n", v, d1, d2, d3, d4)
+		s := fmt.Sprintf("UPDATE deviceinus SET pb980 = %d, scd700 = %d, forcetriad=%d, cooltip=%d WHERE city = '%s' and stateprovince='%s'", d1, d2, d3, d4, v[0], v[1])
+		log.Println(s)
+		_, err := ops.Db.Exec(s)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	return nil
-}
-
-func (ops *DBOps) UpdateDeviceNumByDeviceTypeInOneCity(city string, province string) error {
-	d1 := ops.GetDeviceNumInCity(city, province, 1)
-	d2 := ops.GetDeviceNumInCity(city, province, 1)
-	d3 := ops.GetDeviceNumInCity(city, province, 1)
-	d4 := ops.GetDeviceNumInCity(city, province, 1)
-	return nil
 }
 
 func (ops *DBOps) GetDeviceNumInCity(city string, province string, devicetype int) int {
 	s := fmt.Sprintf("select count(serialnumber) from deviceindmp where city = '%s' and stateprovince='%s' and devicetype = %d", city, province, devicetype)
-	log.Println(s)
+//	log.Println(s)
 	var result int
 	err := ops.Db.QueryRow(s).Scan(&result)
 

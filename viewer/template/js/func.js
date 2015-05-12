@@ -9,14 +9,11 @@ function charts(column,rows, options) {
 			data.addColumn('string', column);
 			data.addColumn('number', 'Total');
 			data.addRows(rows);
-			
-			$('#chart_geo').remove();
-			$("#geo").append("<div id='chart_geo' style='width: 512px; height: 384px;'></div>")
 
 			// Instantiate and draw our chart, passing in some options.
 			var chart1 = new google.visualization.GeoChart(document
 					.getElementById('chart_geo'));
-			chart1.clearChart();
+		//	chart1.clearChart();
 			chart1.draw(data, options);
 			var chart2 = new google.visualization.PieChart(document
 					.getElementById('chart_pie'));

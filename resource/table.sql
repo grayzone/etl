@@ -197,7 +197,6 @@ update device set devicetype = 3 where sku in (select sku from sku where devicet
 update device set devicetype = 4 where sku in (select sku from sku where devicetype = 4);
 
 update location set city = 'WAITE PARK' where id = 487587;
-update location set city = 'L ANSE' where id in(530550,555711,541702);
 
 
 

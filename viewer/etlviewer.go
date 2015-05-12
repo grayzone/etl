@@ -30,8 +30,10 @@ func viewWorldHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewUSHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	devicetype := r.PostFormValue("devicetype")
 
-	result := getDeviceInCountry()
+	result := getDeviceInCountry(devicetype)
 
 	fmt.Fprint(w, result)
 }
@@ -73,7 +75,7 @@ func getDeviceInContinent() string {
 	return string(b)
 }
 
-func getDeviceInCountry() string {
+func getDeviceInCountry(devicetype string) string {
 	var db util.DBOps
 	err := db.Open()
 	if err != nil {
@@ -81,7 +83,7 @@ func getDeviceInCountry() string {
 	}
 	defer db.Close()
 
-	result, err := db.GetDeviceInCountry()
+	result, err := db.GetDeviceInCountry(devicetype)
 	if err != nil {
 		log.Fatal(err)
 	}
