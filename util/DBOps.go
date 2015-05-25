@@ -567,7 +567,7 @@ func (ops *DBOps) GetDeviceInProvince(province string) ([]CityLevel, error) {
 }
 
 func (ops *DBOps) GetCityListInProvince() ([][]string, error) {
-	rows, err := ops.Db.Query("select city,stateprovince from deviceinus")
+	rows, err := ops.Db.Query("select city,stateprovince,id from deviceinus order by id")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -578,12 +578,14 @@ func (ops *DBOps) GetCityListInProvince() ([][]string, error) {
 		var record []string
 		var city string
 		var province string
-		err := rows.Scan(&city, &province)
+		var id string
+		err := rows.Scan(&city, &province, &id)
 		if err != nil {
 			log.Fatal(err)
 		}
 		record = append(record, city)
 		record = append(record, province)
+		record = append(record, id)
 
 		result = append(result, record)
 	}
@@ -628,4 +630,58 @@ func (ops *DBOps) GetDeviceNumInCity(city string, province string, devicetype in
 	}
 
 	return result
+}
+
+
+func (ops *DBOps) IsOldCustomerDeleted(customerid string)bool{
+	s := fmt.Sprintf("select isdeleted from customer where customerid = '%s'", customerid)
+	var result string
+	err := ops.Db.QueryRow(s).Scan(&result)
+
+	switch {
+	case err == sql.ErrNoRows:
+		log.Printf("No user with that ID.")
+		return false
+	case err != nil:
+		log.Fatal(err)
+	default:
+		//		fmt.Printf("Username is %s\n", username)
+	}
+	
+	if result == "1"{
+		return true
+	}
+	return false
+	
+}
+
+func (ops *DBOps) IsNewCustomerExisting(customerid string)bool{
+	s := fmt.Sprintf("select isdeleted from customer where customerid = '%s'", customerid)
+	var result string
+	err := ops.Db.QueryRow(s).Scan(&result)
+
+	switch {
+	case err == sql.ErrNoRows:
+		log.Printf("No user with that ID.")
+		return false
+	case err != nil:
+		log.Fatal(err)
+	default:
+		//		fmt.Printf("Username is %s\n", username)
+	}
+	
+	if result == "0"{
+		return true
+	}
+	return false
+}
+
+func (ops *DBOps)UpdateCityCoordinateByID(id string, lat float64, lng float64){
+		s := fmt.Sprintf("UPDATE deviceinus SET coordinate = POINT(%f,%f) WHERE id = %s", lat, lng, id)
+		log.Println(s)
+		_, err := ops.Db.Exec(s)
+		if err != nil {
+			log.Fatal(err)
+		}
+	
 }

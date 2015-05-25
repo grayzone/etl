@@ -2,13 +2,55 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"github.com/grayzone/etl/util"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type ImportData func([][]string) error
+
+type GeoResponse struct {
+	Status  string   `json:"status"`
+	Results []Result `json:"results"`
+}
+
+type Result struct {
+	AddressComponents []AddressComponent `json:"address_components"`
+	FormattedAddress  string             `json:"formatted_address"`
+	Geometry          Geometry           `json:"geometry"`
+	PlaceID           string             `json:"place_id"`
+	Types             []string           `json:"types"`
+}
+
+type AddressComponent struct {
+	LongName  string   `json:"long_name"`
+	ShortName string   `json:"short_name"`
+	Types     []string `json:"types"`
+}
+
+type Geometry struct {
+	Bounds       Area       `json:"bounds"`
+	Location     Coordinate `json:"location"`
+	LocationType string     `json:"location_type"`
+	Viewport     Area       `json:"viewport"`
+}
+
+type Coordinate struct {
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
+}
+
+type Area struct {
+	Northeast Coordinate `json:"northeast"`
+	Southwest Coordinate `json:"southwest"`
+}
 
 const DATA_SOURCE_FOLDER = "C:\\etl\\datasource\\20150419"
 const READ_DATA_LINE = 5000
@@ -154,14 +196,138 @@ func UpdateDeviceNumByTypeInUS() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	result ,_ := db.GetCityListInProvince()
-//	log.Println(result)
+	result, _ := db.GetCityListInProvince()
+	//	log.Println(result)
 	db.UpdateDeviceNumByDeviceType(result)
+}
+
+func VerifyOldCustomerID() {
+	var db util.DBOps
+	err := db.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	filepath := "C:\\etl\\old.txt"
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	i := 0
+	for scanner.Scan() {
+		i = i + 1
+
+		if db.IsOldCustomerDeleted(scanner.Text()) == false {
+			log.Printf("%d:%s...error\n", i, scanner.Text())
+		} else {
+			log.Printf("%d:%s.....ok\n", i, scanner.Text())
+		}
+
+	}
+
+}
+
+func VerifyNewCustomerID() {
+	var db util.DBOps
+	err := db.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	filepath := "C:\\etl\\new.txt"
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	i := 0
+	for scanner.Scan() {
+		i = i + 1
+
+		if db.IsNewCustomerExisting(scanner.Text()) == false {
+			log.Printf("%d:%s...error\n", i, scanner.Text())
+		} else {
+			if i%1000 == 0 {
+				log.Printf("%d:%s.....ok\n", i, scanner.Text())
+			}
+			//			log.Printf("%d:%s.....ok\n",i,scanner.Text())
+		}
+
+	}
+
+}
+
+//http://maps.googleapis.com/maps/api/geocode/json?address=%E2%80%98ABBEVILLE%20LA%20US%E2%80%99
+func UpdateCityCoordinate() {
+	var db util.DBOps
+	err := db.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	googleapi := "http://maps.googleapis.com/maps/api/geocode/json?address="
+	u, err := url.Parse(googleapi)
+	q := u.Query()
+
+	citylist, _ := db.GetCityListInProvince()
+	var i int64
+	i = 194
+
+	for _, city := range citylist {
+		cityid, _ := strconv.ParseInt(city[2], 10, 64)
+		log.Println(cityid)
+		if cityid < i {
+			continue
+		}
+
+		i = i + 1
+		if i > 1800 {
+			break
+		}
+
+		//		log.Println(city[2])
+		param := city[0] + " " + city[1] + " " + "US"
+		q.Set("address", param)
+		u.RawQuery = q.Encode()
+		//		log.Println(u)
+
+		u.RawQuery = q.Encode()
+		//		log.Println(u)
+		res, err := http.Get(u.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var f GeoResponse
+		json.Unmarshal(body, &f)
+		//		log.Println(city[2])
+		//		log.Println(f.Results[0].Geometry.Location)
+		loc := f.Results[0].Geometry.Location
+		db.UpdateCityCoordinateByID(city[2], loc.Lat, loc.Lng)
+		time.Sleep(100 * time.Millisecond)
+
+	}
+
 }
 
 func main() {
 
- // loadETLDataSouce()
+	// loadETLDataSouce()
 	//loadETLlog()
-	UpdateDeviceNumByTypeInUS()
+	//	UpdateDeviceNumByTypeInUS()
+
+	//	VerifyOldCustomerID()
+	//	VerifyNewCustomerID()
+
+	UpdateCityCoordinate()
+
 }
