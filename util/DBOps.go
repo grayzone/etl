@@ -26,8 +26,9 @@ func (ops *DBOps) Init() {
 }
 
 type CityLevel struct {
-	City  string
-	Total int
+	City       string
+	Coordinate string
+	Total      int
 }
 
 type ProvinceLevel struct {
@@ -502,15 +503,15 @@ func (ops *DBOps) GetDeviceInContinent() ([]CountryLevel, error) {
 func (ops *DBOps) GetDeviceInCountry(devicetype string) ([]ProvinceLevel, error) {
 	var s string
 	switch devicetype {
-		case "0":
+	case "0":
 		s = fmt.Sprintf("select stateprovince, sum(total) as total from deviceinus group by stateprovince order by stateprovince")
-		case "1":
+	case "1":
 		s = fmt.Sprintf("select stateprovince, sum(pb980) as total from deviceinus group by stateprovince order by stateprovince")
-		case "2":
+	case "2":
 		s = fmt.Sprintf("select stateprovince, sum(scd700) as total from deviceinus group by stateprovince order by stateprovince")
-		case "3":
+	case "3":
 		s = fmt.Sprintf("select stateprovince, sum(forcetriad) as total from deviceinus group by stateprovince order by stateprovince")
-		case "4":
+	case "4":
 		s = fmt.Sprintf("select stateprovince, sum(cooltip) as total from deviceinus group by stateprovince order by stateprovince")
 	}
 	rows, err := ops.Db.Query(s)
@@ -538,8 +539,38 @@ func (ops *DBOps) GetDeviceInCountry(devicetype string) ([]ProvinceLevel, error)
 	return result, nil
 }
 
-func (ops *DBOps) GetDeviceInProvince(province string) ([]CityLevel, error) {
-	s := fmt.Sprintf("select city, sum(total) as total from deviceinus where stateprovince = '%s' group by city order by city", province)
+func (ops *DBOps) GetDeviceInProvince(province string, devicetype string) ([]CityLevel, error) {
+	var s string
+	if province == "ALL" {
+		switch devicetype {
+		case "0":
+			s = fmt.Sprintf("select city,stateprovince, sum(total) as total from deviceinus where coordinate is not null group by city,stateprovince order by city")
+		case "1":
+			s = fmt.Sprintf("select city,stateprovince, sum(pb980) as total from deviceinus where coordinate is not null group by city,stateprovince order by city")
+		case "2":
+			s = fmt.Sprintf("select city,stateprovince, sum(scd700) as total from deviceinus where coordinate is not null group by city,stateprovince order by city")
+		case "3":
+			s = fmt.Sprintf("select city,stateprovince, sum(forcetriad) as total from deviceinus where coordinate is not null group by city,stateprovince order by city")
+		case "4":
+			s = fmt.Sprintf("select city,stateprovince, sum(cooltip) as total from deviceinus where coordinate is not null group by city,stateprovince order by city")
+		}
+
+	} else {
+		switch devicetype {
+		case "0":
+			s = fmt.Sprintf("select city, stateprovince, sum(total) as total from deviceinus where stateprovince = '%s' group by city,stateprovince order by city", province)
+		case "1":
+			s = fmt.Sprintf("select city, stateprovince, sum(pb980) as total from deviceinus where stateprovince = '%s' group by city,stateprovince order by city", province)
+		case "2":
+			s = fmt.Sprintf("select city, stateprovince, sum(scd700) as total from deviceinus where stateprovince = '%s' group by city,stateprovince order by city", province)
+		case "3":
+			s = fmt.Sprintf("select city, stateprovince, sum(forcetriad) as total from deviceinus where stateprovince = '%s' group by city,stateprovince order by city", province)
+		case "4":
+			s = fmt.Sprintf("select city, stateprovince, sum(cooltip) as total from deviceinus where stateprovince = '%s' group by city,stateprovince order by city", province)
+		}
+
+	}
+
 	//	log.Println(sql)
 	rows, err := ops.Db.Query(s)
 	if err != nil {
@@ -551,10 +582,16 @@ func (ops *DBOps) GetDeviceInProvince(province string) ([]CityLevel, error) {
 	for rows.Next() {
 		var record CityLevel
 
-		err := rows.Scan(&record.City, &record.Total)
+		var stateprovince string
+
+		err := rows.Scan(&record.City, &stateprovince, &record.Total)
 		if err != nil {
 			log.Fatal(err)
 		}
+		if record.Total == 0{
+			continue
+		}
+		record.Coordinate, _ = ops.GetCityCoordinate(record.City, stateprovince)
 
 		result = append(result, record)
 	}
@@ -615,7 +652,7 @@ func (ops *DBOps) UpdateDeviceNumByDeviceType(city [][]string) {
 
 func (ops *DBOps) GetDeviceNumInCity(city string, province string, devicetype int) int {
 	s := fmt.Sprintf("select count(serialnumber) from deviceindmp where city = '%s' and stateprovince='%s' and devicetype = %d", city, province, devicetype)
-//	log.Println(s)
+	//	log.Println(s)
 	var result int
 	err := ops.Db.QueryRow(s).Scan(&result)
 
@@ -632,8 +669,7 @@ func (ops *DBOps) GetDeviceNumInCity(city string, province string, devicetype in
 	return result
 }
 
-
-func (ops *DBOps) IsOldCustomerDeleted(customerid string)bool{
+func (ops *DBOps) IsOldCustomerDeleted(customerid string) bool {
 	s := fmt.Sprintf("select isdeleted from customer where customerid = '%s'", customerid)
 	var result string
 	err := ops.Db.QueryRow(s).Scan(&result)
@@ -647,15 +683,15 @@ func (ops *DBOps) IsOldCustomerDeleted(customerid string)bool{
 	default:
 		//		fmt.Printf("Username is %s\n", username)
 	}
-	
-	if result == "1"{
+
+	if result == "1" {
 		return true
 	}
 	return false
-	
+
 }
 
-func (ops *DBOps) IsNewCustomerExisting(customerid string)bool{
+func (ops *DBOps) IsNewCustomerExisting(customerid string) bool {
 	s := fmt.Sprintf("select isdeleted from customer where customerid = '%s'", customerid)
 	var result string
 	err := ops.Db.QueryRow(s).Scan(&result)
@@ -669,19 +705,35 @@ func (ops *DBOps) IsNewCustomerExisting(customerid string)bool{
 	default:
 		//		fmt.Printf("Username is %s\n", username)
 	}
-	
-	if result == "0"{
+
+	if result == "0" {
 		return true
 	}
 	return false
 }
 
-func (ops *DBOps)UpdateCityCoordinateByID(id string, lat float64, lng float64){
-		s := fmt.Sprintf("UPDATE deviceinus SET coordinate = POINT(%f,%f) WHERE id = %s", lat, lng, id)
-		log.Println(s)
-		_, err := ops.Db.Exec(s)
-		if err != nil {
-			log.Fatal(err)
-		}
-	
+func (ops *DBOps) UpdateCityCoordinateByID(id string, lat float64, lng float64) {
+	s := fmt.Sprintf("UPDATE deviceinus SET coordinate = POINT(%f,%f) WHERE id = %s", lat, lng, id)
+	log.Println(s)
+	_, err := ops.Db.Exec(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (ops *DBOps) GetCityCoordinate(city string, province string) (string, error) {
+	s := fmt.Sprintf("select coordinate from deviceinus where city = '%s' and stateprovince = '%s'", city, province)
+	var result string
+	err := ops.Db.QueryRow(s).Scan(&result)
+
+	switch {
+	case err == sql.ErrNoRows:
+		log.Printf("No user with that ID.")
+		return "", err
+	case err != nil:
+		return "", err
+	default:
+		//		fmt.Printf("Username is %s\n", username)
+	}
+	return result, nil
 }

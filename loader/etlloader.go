@@ -6,6 +6,7 @@ import (
 	"github.com/grayzone/etl/util"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -277,7 +278,8 @@ func UpdateCityCoordinate() {
 
 	citylist, _ := db.GetCityListInProvince()
 	var i int64
-	i = 194
+	i = 1798
+	j := 0
 
 	for _, city := range citylist {
 		cityid, _ := strconv.ParseInt(city[2], 10, 64)
@@ -286,8 +288,8 @@ func UpdateCityCoordinate() {
 			continue
 		}
 
-		i = i + 1
-		if i > 1800 {
+		j = j + 1
+		if j > 1000 {
 			break
 		}
 
@@ -298,7 +300,7 @@ func UpdateCityCoordinate() {
 		//		log.Println(u)
 
 		u.RawQuery = q.Encode()
-		//		log.Println(u)
+		log.Println(u)
 		res, err := http.Get(u.String())
 		if err != nil {
 			log.Fatal(err)
@@ -309,11 +311,35 @@ func UpdateCityCoordinate() {
 		}
 		var f GeoResponse
 		json.Unmarshal(body, &f)
+
+		if f.Status != "OK" {
+			continue
+		}
 		//		log.Println(city[2])
 		//		log.Println(f.Results[0].Geometry.Location)
 		loc := f.Results[0].Geometry.Location
 		db.UpdateCityCoordinateByID(city[2], loc.Lat, loc.Lng)
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
+
+	}
+
+}
+
+func TestFunc() {
+
+	result := 9999
+	for result != 0 {
+		a := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+		b := rand.Perm(9)
+		for i, _ := range a {
+			a[i] = b[i] + 1
+		}
+		if (13*a[1])%a[2] == 0 && (a[6]*a[7])%a[8] == 0{
+			result = a[0] + (13*a[1])/a[2] + a[3] + 12*a[4] - a[5] + (a[6]*a[7])/a[8] - 87
+		}else{
+			result = 9999
+		}
+		log.Println(result)
 
 	}
 
@@ -328,6 +354,6 @@ func main() {
 	//	VerifyOldCustomerID()
 	//	VerifyNewCustomerID()
 
-	UpdateCityCoordinate()
-
+	//	UpdateCityCoordinate()
+	TestFunc()
 }

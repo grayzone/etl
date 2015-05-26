@@ -41,8 +41,10 @@ func viewUSHandler(w http.ResponseWriter, r *http.Request) {
 func viewProvinceHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	province := r.PostFormValue("province")
+	devicetype := r.PostFormValue("devicetype")
 
-	result := GetDeviceInProvince(strings.TrimPrefix(province, "US-"))
+	result := GetDeviceInProvince(strings.TrimPrefix(province, "US-"), devicetype)
+	
 
 	fmt.Fprint(w, result)
 }
@@ -96,7 +98,7 @@ func getDeviceInCountry(devicetype string) string {
 	return string(b)
 }
 
-func GetDeviceInProvince(province string) string {
+func GetDeviceInProvince(province string, devicetype string) string {
 
 	var db util.DBOps
 	err := db.Open()
@@ -105,7 +107,7 @@ func GetDeviceInProvince(province string) string {
 	}
 	defer db.Close()
 
-	result, err := db.GetDeviceInProvince(province)
+	result, err := db.GetDeviceInProvince(province, devicetype)
 	if err != nil {
 		log.Fatal(err)
 	}

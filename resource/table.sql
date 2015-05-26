@@ -162,6 +162,7 @@ ALTER TABLE deviceinus ADD COLUMN pb980 int default 0;
 ALTER TABLE deviceinus ADD COLUMN scd700 int default 0;
 ALTER TABLE deviceinus ADD COLUMN forcetriad int default 0;
 ALTER TABLE deviceinus ADD COLUMN cooltip int default 0;
+ALTER TABLE deviceinus ADD COLUMN coordinate point,
 ALTER TABLE deviceinus ADD PRIMARY KEY (id);
 
 drop table deviceindmp;

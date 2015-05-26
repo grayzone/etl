@@ -69,17 +69,28 @@ $(document).ready(function() {
 			url : "/province",
 			dataType:"json",
 			data:{
-				"province":$('#province').val()				
+				"province":$('#province').val()	,
+				"devicetype":$('#devicetype').val()
 			},
 			async: false ,
 			success : function(result) {
 				if (result == null){
+					alert("no results found");
 					return ;
 				}
 				var data = [];
 				for (i=0;i<result.length;i++){
-					var item = [result[i].City, result[i].Total];
-					data.push(item);
+					var coordinate = result[i].Coordinate;
+					var len = coordinate.length
+					if(len > 0){
+						var index = coordinate.indexOf(",");
+						var lat = parseFloat(coordinate.substring(1,index));
+						var lng = parseFloat(coordinate.substring(index+1,len-1));
+						
+						var item = [lat,lng,result[i].City, result[i].Total];
+						data.push(item);						
+					}
+					
 				}
 				var options = {
 						region : $('#province').val(),
@@ -87,8 +98,11 @@ $(document).ready(function() {
 						displayMode:'markers'
 
 					};	
-				
-				charts($('#province').val(), data, options);
+				if ($('#province').val() == "US-ALL"){
+					options["region"] = "US";
+				}
+
+				charts_coordinate($('#province').val(), data, options);
 
 			}
 		});

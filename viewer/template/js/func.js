@@ -24,6 +24,38 @@ function charts(column,rows, options) {
 	});
 }
 
+function charts_coordinate(column,rows, options) {
+	
+	google.load('visualization', '1.0', {
+		'packages' : [ 'corechart' ],
+		callback : function() {
+
+			// Create the data table.
+			var data = new google.visualization.DataTable();
+			data.addColumn('number','Latitude');
+			data.addColumn('number','Longitude');	
+			data.addColumn('string', column);
+			data.addColumn('number', 'Total');
+			data.addRows(rows);
+
+			// Instantiate and draw our chart, passing in some options.
+			var chart1 = new google.visualization.GeoChart(document
+					.getElementById('chart_geo'));
+		//	chart1.clearChart();
+			chart1.draw(data, options);
+			
+			
+			var chart2 = new google.visualization.PieChart(document
+					.getElementById('chart_pie'));
+		//	chart2.clearChart();
+			chart2.draw(data);
+
+		}
+	});
+}
+
+
+
 function GetDatabyContinent(data) {
 	var continent = $('#continent').val()
 	var countrylist;
