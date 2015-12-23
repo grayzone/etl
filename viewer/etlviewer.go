@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/grayzone/etl/util"
 	"html/template"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/saiyawang/etl/util"
 )
 
 func renderHandler(w http.ResponseWriter, r *http.Request, templatepath string) {
@@ -44,13 +45,12 @@ func viewProvinceHandler(w http.ResponseWriter, r *http.Request) {
 	devicetype := r.PostFormValue("devicetype")
 
 	result := GetDeviceInProvince(strings.TrimPrefix(province, "US-"), devicetype)
-	
 
 	fmt.Fprint(w, result)
 }
 
 func staticHandler(w http.ResponseWriter, r *http.Request) {
-//	fmt.Println(r.URL.Path[1:])
+	//	fmt.Println(r.URL.Path[1:])
 
 	http.ServeFile(w, r, r.URL.Path[1:])
 }
@@ -111,8 +111,8 @@ func GetDeviceInProvince(province string, devicetype string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
-//	log.Println(result)
+
+	//	log.Println(result)
 
 	b, err := json.Marshal(result)
 	if err != nil {

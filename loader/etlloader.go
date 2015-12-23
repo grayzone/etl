@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/grayzone/etl/util"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -13,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/saiyawang/etl/util"
 )
 
 type ImportData func([][]string) error
@@ -331,12 +332,12 @@ func TestFunc() {
 	for result != 0 {
 		a := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
 		b := rand.Perm(9)
-		for i, _ := range a {
+		for i := range a {
 			a[i] = b[i] + 1
 		}
-		if (13*a[1])%a[2] == 0 && (a[6]*a[7])%a[8] == 0{
+		if (13*a[1])%a[2] == 0 && (a[6]*a[7])%a[8] == 0 {
 			result = a[0] + (13*a[1])/a[2] + a[3] + 12*a[4] - a[5] + (a[6]*a[7])/a[8] - 87
-		}else{
+		} else {
 			result = 9999
 		}
 		log.Println(result)
